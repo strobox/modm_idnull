@@ -15,6 +15,17 @@ class Kernel extends BaseKernel
 
     const CONFIG_EXTS = '.{php,xml,yaml,yml}';
 
+    private $is_cli;
+
+    public function __construct($env,$debug,$is_cli = false)
+    {
+        if($is_cli) {
+            $this->is_cli = true;
+            $_ENV['MONGODB_URL'] =  'mongodb://mongodb:27020';
+        }
+        parent::__construct($env,$debug);
+    }
+
     public function getCacheDir()
     {
         return $this->getProjectDir().'/var/cache/'.$this->environment;

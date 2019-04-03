@@ -3,38 +3,55 @@ version: '3'
 services:
 
     php:
-      image: mattsmeets/symfony-php-dev:1.0
+      image: afram/wp_xdebug:pmx #wordpress:fpm
       networks:
       - net
       volumes:
       - ./:/var/www/symfony
-
+      - ../xap_gen-td/apistubs-php/:/var/www/xap_gen-td/apistubs-php/
+      environment:
+        PHP_XDEBUG_ENABLED: 1 # Set 1 to enable.
+        XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9001
+      container_name: xap_pback_php
     nginx:
       image: mattsmeets/symfony-nginx:1.0
       ports:
-      - 80:80
+      - 8080:80
       networks:
       - net
       depends_on:
       - mysql
+      - mongodb
       - php
       volumes:
       - ./var/logs/nginx/:/var/log/nginx
       - ./:/var/www/symfony
-
+      - ../xap_gen-td/apistubs-php/:/var/www/xap_gen-td/apistubs-php/
+      container_name: xap_pback_nginx
+    mongodb:
+        image: mongo
+        restart: always
+        volumes:
+            - ./docker/mongo/db:/data/db
+        networks:
+          - net
+        ports:
+            - 27020:27017
+        command: --storageEngine wiredTiger
+        container_name: xap_pback_mongo
     mysql:
-      image: mysql
-      ports:
-      - 3310:3306
-      networks:
-      - net
-      volumes:
-      - ./docker/mysql/data:/var/lib/mysql
-      - ./:/var/www
-      environment:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_USER: root
-
+        image: afram/mysql:8_mycfg
+        ports:
+        - 3306:3306
+        networks:
+        - net
+        volumes:
+        - ./docker/mysql/data:/var/lib/mysql
+        - ./:/var/www
+        environment:
+            MYSQL_ROOT_PASSWORD: devd
+            MYSQL_USER: root
+        container_name: xap_pback_mysql
 networks:
     net:
       driver: bridge

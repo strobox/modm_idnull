@@ -34,6 +34,6 @@ if ($debug) {
     }
 }
 
-$kernel = new Kernel($env, $debug);
+$kernel = new Kernel($env, $debug,'cli' === PHP_SAPI);
 $application = new Application($kernel);
 $application->run($input);
